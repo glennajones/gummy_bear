@@ -1669,6 +1669,8 @@ export default function LayupScheduler() {
 
       const compatibleMolds = molds.filter(mold => {
         if (!mold.enabled) return false;
+        // P1 scheduler should only use P1 molds (exclude P2 molds)
+        if (mold.moldId.includes('P2') || mold.modelName.includes('P2')) return false;
 
         // STRICT RULE: Molds must have explicit stock model restrictions to be compatible
         // Empty or undefined stockModels means the mold is not configured properly
@@ -1727,10 +1729,10 @@ export default function LayupScheduler() {
     // Track daily assignments for logging
 
     console.log('🎯 Starting single-card-per-cell assignment algorithm with Mesa Universal constraints');
-    console.log(`📦 Processing ${orders.length} orders with ${molds.filter(m => m.enabled).length} enabled molds`);
+    console.log(`📦 Processing ${orders.length} orders with ${molds.filter(m => m.enabled && !m.moldId.includes('P2') && !m.modelName.includes('P2')).length} enabled P1 molds`);
 
     // Debug mold configurations
-    molds.filter(m => m.enabled).forEach(mold => {
+    molds.filter(m => m.enabled && !m.moldId.includes('P2') && !m.modelName.includes('P2')).forEach(mold => {
       console.log(`🔧 Mold ${mold.moldId}: ${mold.stockModels?.length || 0} stock models configured`);
     });
 
@@ -1752,7 +1754,7 @@ export default function LayupScheduler() {
       dailyAssignments[dateKey] = 0;
     });
 
-    molds.filter(m => m.enabled).forEach(mold => {
+    molds.filter(m => m.enabled && !m.moldId.includes('P2') && !m.modelName.includes('P2')).forEach(mold => {
       moldNextDate[mold.moldId] = 0;
     });
 
@@ -2208,6 +2210,8 @@ export default function LayupScheduler() {
       const modelId = order.stockModelId || order.modelId;
       const compatibleMolds = molds.filter(mold => {
         if (!mold.enabled) return false;
+        // P1 scheduler should only use P1 molds (exclude P2 molds)
+        if (mold.moldId.includes('P2') || mold.modelName.includes('P2')) return false;
         if (!mold.stockModels || mold.stockModels.length === 0) return true;
         
         // STRICT VALIDATION: Stock model MUST match exactly - NO EXCEPTIONS
@@ -2237,6 +2241,8 @@ export default function LayupScheduler() {
 
     const relevantMolds = molds.filter(m => {
       if (!m.enabled) return false;
+      // P1 scheduler should only use P1 molds (exclude P2 molds)
+      if (m.moldId.includes('P2') || m.modelName.includes('P2')) return false;
       const hasAssignments = Object.values(orderAssignments).some(assignment => assignment.moldId === m.moldId);
       const isCompatibleWithQueue = compatibleMoldIds.has(m.moldId);
       return hasAssignments || isCompatibleWithQueue;
@@ -3043,6 +3049,8 @@ export default function LayupScheduler() {
     const modelId = getOrderModelId(order);
     const compatibleMolds = molds.filter(mold => {
       if (!mold.enabled) return false;
+      // P1 scheduler should only use P1 molds (exclude P2 molds)
+      if (mold.moldId.includes('P2') || mold.modelName.includes('P2')) return false;
       if (!mold.stockModels || mold.stockModels.length === 0) return true;
       if (mold.stockModels.includes(modelId)) return true;
       if (mold.stockModels.includes('universal')) return true;
@@ -3159,6 +3167,8 @@ export default function LayupScheduler() {
       
       const compatibleMolds = molds.filter(mold => {
         if (!mold.enabled) return false;
+        // P1 scheduler should only use P1 molds (exclude P2 molds)
+        if (mold.moldId.includes('P2') || mold.modelName.includes('P2')) return false;
         if (!mold.stockModels || mold.stockModels.length === 0) return true;
         
         const hasMatch = mold.stockModels.includes(modelId);
@@ -3392,7 +3402,7 @@ export default function LayupScheduler() {
                 </span>
               </div>
               <div className="bg-cyan-50 dark:bg-cyan-900/20 px-3 py-2 rounded-lg">
-                <span className="text-cyan-700 dark:text-cyan-300 font-medium">{molds.filter(m => m.enabled).length} Active Molds</span>
+                <span className="text-cyan-700 dark:text-cyan-300 font-medium">{molds.filter(m => m.enabled && !m.moldId.includes('P2') && !m.modelName.includes('P2')).length} Active P1 Molds</span>
               </div>
               <div className="bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-lg">
                 <span className="text-purple-700 dark:text-purple-300 font-medium">{employees.length} Employees</span>
